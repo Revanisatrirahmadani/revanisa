@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Aplikasi Perhitungan Diskon</title>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Roboto', Arial, sans-serif;
+      background-color: #f4f4f9;
+      padding: 30px;
+    }
+    .container {
+      max-width: 900px;
+      margin: auto;
+      background: #f9f9f9;
+      padding: 20px;
+      border-radius: 10px;
+    }
+    input, button {
+      padding: 10px;
+      font-size: 1rem;
+      width: 100%;
+      margin-bottom: 10px;
+    }
+    button {
+      cursor: pointer;
+      background: #f76ae2;
+      color: #fff;
+      border: none;
+      border-radius: 5px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+    table th, table td {
+      padding: 10px;
+      border: 1px solid #ccc;
+    }
+    .actions i {
+      margin: 0 5px;
+      cursor: pointer;
+      color: #f76ae2;
+    }
+    .actions i:hover {
+      color: #f76ae2;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <h1 style="text-align: center;">Aplikasi Perhitungan Diskon</h1>
+
+    <form id="barangForm">
+      <label>Nama Barang:</label>
+      <input type="text" id="nama_barang" required>
+      <label>Harga Awal (Rp):</label>
+      <input type="number" id="harga_awal" required>
+      <label>Diskon (%):</label>
+      <input type="number" id="diskon_persen" required>
+      <button type="submit">Simpan Barang</button>
+      <button type="button" onclick="resetForm()">Reset</button>
+    </form>
+
+    <hr>
+
+    <h2>Daftar Barang</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Nama Barang</th>
+          <th>Harga</th>
+          <th>Diskon (%)</th>
+          <th>Total</th>
+          <th>Aksi</th>
+        </tr>
+      </thead>
+      <tbody id="tabel_barang"></tbody>
+    </table>
+
+  </div>
+
+  <script>
+    let barang = JSON.parse(localStorage.getItem('barang')) || [];
+
+    function simpanBarang(event) {
+      event.preventDefault();
+
+      const nama = document.getElementById("nama_barang").value.trim();
+      const harga = parseFloat(document.getElementById("harga_awal").value);
+      const diskon = parseFloat(document.getElementById("diskon_persen").value);
+
+      if (!nama || isNaN(harga) || isNaN(diskon)) {
+        alert("Semua data harus diisi dengan benar!");
+        return;
+      }
+
+      if (diskon > 100) {
+        alert("Diskon tidak boleh melebihi 100%");
+        return;
+      }
+
+      const total = harga - (harga * diskon / 100);
+      const dataBaru = { nama_barang: nama, harga_awal: harga, diskon_persen: diskon, harga_akhir: total };
+
+      barang.push(dataBaru);
+
+      localStorage.setItem("barang", JSON.stringify(barang));
+      resetForm();
+      tampilkanBarang();
+    }
+
+    function tampilkanBarang() {
+      const tbody = document.getElementById("tabel_barang");
+      tbody.innerHTML = "";
+
+      barang.forEach((item, index) => {
+        tbody.innerHTML += `
+          <tr>
+            <td>${item.nama_barang}</td>
+            <td>Rp ${item.harga_awal.toLocaleString("id-ID", {minimumFractionDigits: 2})}</td>
+            <td>${item.diskon_persen}%</td>
+            <td>Rp ${item.harga_akhir.toLocaleString("id-ID", {minimumFractionDigits: 2})}</td>
+            <td class="actions">
+              <i class="fas fa-trash" onclick="hapusBarang(${index})"></i>
+            </td>
+          </tr>
+        `;
+      });
+    }
+
+    function hapusBarang(index) {
+      if (confirm("Yakin ingin menghapus?")) {
+        barang.splice(index, 1);
+        localStorage.setItem("barang", JSON.stringify(barang));
+        tampilkanBarang();
+      }
+    }
+
+    function resetForm() {
+      document.getElementById("barangForm").reset();
+    }
+
+    document.getElementById("barangForm").addEventListener("submit", simpanBarang);
+    window.onload = tampilkanBarang;
+  </script>
+
+</body>
+</html>
